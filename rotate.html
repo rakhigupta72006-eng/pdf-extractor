@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Rotate Pages - PDF Extractor</title>
+
+  <!-- PDF-LIB -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f8fafc;
+      color: #111827;
+    }
+
+    /* NAVBAR */
+
+    .navbar {
+      height: 70px;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      padding: 0 7%;
+    }
+
+    .logo {
+      color: #2563eb;
+      text-decoration: none;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #374151;
+    }
+
+    .nav-links a:hover {
+      color: #2563eb;
+    }
+
+    /* MAIN */
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      padding: 50px 20px;
+    }
+
+    .title {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .title h1 {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .title p {
+      color: #6b7280;
+    }
+
+    /* UPLOAD */
+
+    .upload-box {
+      background: white;
+      border: 2px dashed #93c5fd;
+      border-radius: 15px;
+
+      padding: 45px;
+      text-align: center;
+
+      margin-bottom: 25px;
+    }
+
+    .upload-icon {
+      font-size: 45px;
+      margin-bottom: 15px;
+    }
+
+    .upload-box h2 {
+      margin-bottom: 10px;
+    }
+
+    .upload-box p {
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    #pdfInput {
+      display: none;
+    }
+
+    .upload-button {
+      display: inline-block;
+
+      background: #2563eb;
+      color: white;
+
+      padding: 13px 25px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      font-weight: bold;
+    }
+
+    .upload-button:hover {
+      background: #1d4ed8;
+    }
+
+    /* FILE INFO */
+
+    .file-info {
+      display: none;
+
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+
+      padding: 15px;
+
+      border-radius: 10px;
+
+      margin-bottom: 20px;
+
+      text-align: center;
+    }
+
+    /* TOOL */
+
+    .tool-box {
+      display: none;
+
+      background: white;
+
+      border: 1px solid #e5e7eb;
+
+      border-radius: 12px;
+
+      padding: 25px;
+    }
+
+    .tool-box h2 {
+      margin-bottom: 20px;
+    }
+
+    /* PAGE INPUT */
+
+    .page-control {
+      margin-bottom: 20px;
+    }
+
+    .page-control label {
+      display: block;
+
+      font-weight: bold;
+
+      margin-bottom: 8px;
+    }
+
+    .page-input {
+      width: 100%;
+
+      padding: 13px;
+
+      border: 1px solid #d1d5db;
+
+      border-radius: 8px;
+
+      font-size: 16px;
+
+      outline: none;
+    }
+
+    .page-input:focus {
+      border-color: #2563eb;
+
+      box-shadow: 0 0 0 3px #dbeafe;
+    }
+
+    .help {
+      color: #6b7280;
+
+      font-size: 14px;
+
+      margin-top: 8px;
+
+      line-height: 1.5;
+    }
+
+    /* ROTATION */
+
+    .rotation-title {
+      font-weight: bold;
+
+      margin-bottom: 12px;
+    }
+
+    .rotation-buttons {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 12px;
+    }
+
+    .rotation-button {
+      border: none;
+
+      background: #eff6ff;
+
+      color: #1d4ed8;
+
+      padding: 14px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      font-weight: bold;
+
+      font-size: 15px;
+    }
+
+    .rotation-button:hover {
+      background: #dbeafe;
+    }
+
+    /* DOWNLOAD */
+
+    .download-area {
+      text-align: center;
+
+      margin-top: 25px;
+    }
+
+    .download-button {
+      background: #16a34a;
+
+      color: white;
+
+      border: none;
+
+      padding: 15px 30px;
+
+      border-radius: 9px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+    }
+
+    .download-button:hover {
+      background: #15803d;
+    }
+
+    .download-button:disabled {
+      background: #9ca3af;
+
+      cursor: not-allowed;
+    }
+
+    /* STATUS */
+
+    #status {
+      text-align: center;
+
+      margin-top: 20px;
+
+      font-weight: bold;
+
+      line-height: 1.5;
+    }
+
+    .success {
+      color: #16a34a;
+    }
+
+    .error {
+      color: #dc2626;
+    }
+
+    .loading {
+      color: #2563eb;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 600px) {
+
+      .navbar {
+        padding: 0 20px;
+      }
+
+      .title h1 {
+        font-size: 32px;
+      }
+
+      .upload-box {
+        padding: 30px 15px;
+      }
+
+      .rotation-buttons {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- NAVBAR -->
+
+  <header class="navbar">
+
+    <a href="index.html" class="logo">
+      PDF Extractor
+    </a>
+
+    <nav>
+
+      <ul class="nav-links">
+
+        <li>
+          <a href="index.html">
+            Home
+          </a>
+        </li>
+
+        <li>
+          <a href="index.html#tools">
+            Tools
+          </a>
+        </li>
+
+      </ul>
+
+    </nav>
+
+  </header>
+
+
+
+  <!-- MAIN -->
+
+  <main class="container">
+
+
+    <section class="title">
+
+      <h1>
+        Rotate PDF Pages
+      </h1>
+
+      <p>
+        Select pages and rotate them by 90°, 180° or 270°.
+      </p>
+
+    </section>
+
+
+
+    <!-- UPLOAD -->
+
+    <section class="upload-box">
+
+      <div class="upload-icon">
+        🔄
+      </div>
+
+      <h2>
+        Upload your PDF
+      </h2>
+
+      <p>
+        Select the PDF you want to rotate.
+      </p>
+
+      <input
+        type="file"
+        id="pdfInput"
+        accept="application/pdf,.pdf"
+      >
+
+      <label
+        for="pdfInput"
+        class="upload-button"
+      >
+        Choose PDF
+      </label>
+
+    </section>
+
+
+
+    <!-- FILE INFO -->
+
+    <div
+      class="file-info"
+      id="fileInfo"
+    >
+
+      <strong>File:</strong>
+
+      <span id="fileName"></span>
+
+      &nbsp;&nbsp; | &nbsp;&nbsp;
+
+      <strong>Pages:</strong>
+
+      <span id="pageCount"></span>
+
+    </div>
+
+
+
+    <!-- TOOL -->
+
+    <section
+      class="tool-box"
+      id="toolBox"
+    >
+
+      <h2>
+        Rotate Pages
+      </h2>
+
+
+      <!-- PAGE SELECTION -->
+
+      <div class="page-control">
+
+        <label for="pageInput">
+          Pages to rotate
+        </label>
+
+        <input
+          type="text"
+          id="pageInput"
+          class="page-input"
+          placeholder="Example: 1, 3-5, 8"
+        >
+
+        <p class="help">
+
+          Enter page numbers separated by commas.
+
+          <br>
+
+          Example:
+          <strong>1,3,5</strong>
+
+          <br>
+
+          Or use a range:
+          <strong>2-5</strong>
+
+          <br>
+
+          You can combine them:
+          <strong>1,3-5,8</strong>
+
+        </p>
+
+      </div>
+
+
+
+      <!-- ROTATION -->
+
+      <div>
+
+        <div class="rotation-title">
+          Choose rotation
+        </div>
+
+        <div class="rotation-buttons">
+
+          <button
+            class="rotation-button"
+            data-rotation="90"
+          >
+            ↻ Rotate 90°
+          </button>
+
+          <button
+            class="rotation-button"
+            data-rotation="180"
+          >
+            ↻ Rotate 180°
+          </button>
+
+          <button
+            class="rotation-button"
+            data-rotation="270"
+          >
+            ↻ Rotate 270°
+          </button>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- DOWNLOAD -->
+
+      <div class="download-area">
+
+        <button
+          id="downloadButton"
+          class="download-button"
+        >
+          Download Rotated PDF
+        </button>
+
+      </div>
+
+
+      <div id="status"></div>
+
+    </section>
+
+
+  </main>
+
+
+
+  <script>
+
+    /*
+     * ==========================================
+     * VARIABLES
+     * ==========================================
+     */
+
+    let pdfData = null;
+
+    let totalPages = 0;
+
+    let rotationToApply = 0;
+
+
+
+    /*
+     * ==========================================
+     * ELEMENTS
+     * ==========================================
+     */
+
+    const pdfInput =
+      document.getElementById("pdfInput");
+
+    const fileInfo =
+      document.getElementById("fileInfo");
+
+    const fileName =
+      document.getElementById("fileName");
+
+    const pageCount =
+      document.getElementById("pageCount");
+
+    const toolBox =
+      document.getElementById("toolBox");
+
+    const pageInput =
+      document.getElementById("pageInput");
+
+    const downloadButton =
+      document.getElementById("downloadButton");
+
+    const status =
+      document.getElementById("status");
+
+
+
+    /*
+     * ==========================================
+     * CHECK PDF-LIB
+     * ==========================================
+     */
+
+    if (
+      typeof PDFLib === "undefined"
+    ) {
+
+      showError(
+        "PDF library could not load. Please connect to the internet and refresh the page."
+      );
+
+    }
+
+
+
+    /*
+     * ==========================================
+     * SELECT PDF
+     * ==========================================
+     */
+
+    pdfInput.addEventListener(
+      "change",
+      async function () {
+
+        const file =
+          pdfInput.files[0];
+
+        if (!file) {
+          return;
+        }
+
+
+        if (
+          file.type !== "application/pdf" &&
+          !file.name
+            .toLowerCase()
+            .endsWith(".pdf")
+        ) {
+
+          showError(
+            "Please select a PDF file."
+          );
+
+          return;
+        }
+
+
+        try {
+
+          showLoading(
+            "Loading PDF..."
+          );
+
+
+          /*
+           * Read the PDF.
+           */
+
+          pdfData =
+            await file.arrayBuffer();
+
+
+          /*
+           * Open the PDF.
+           */
+
+          const pdf =
+            await PDFLib.PDFDocument.load(
+              pdfData
+            );
+
+
+          /*
+           * Count pages.
+           */
+
+          totalPages =
+            pdf.getPageCount();
+
+
+          /*
+           * Display information.
+           */
+
+          fileName.textContent =
+            file.name;
+
+          pageCount.textContent =
+            totalPages;
+
+
+          fileInfo.style.display =
+            "block";
+
+          toolBox.style.display =
+            "block";
+
+
+          showSuccess(
+            "PDF loaded successfully."
+          );
+
+
+        } catch (error) {
+
+          console.error(error);
+
+          pdfData = null;
+
+          showError(
+            "This PDF cannot be opened. Please try another PDF."
+          );
+
+        }
+
+      }
+    );
+
+
+
+    /*
+     * ==========================================
+     * ROTATION BUTTONS
+     * ==========================================
+     */
+
+    const rotationButtons =
+      document.querySelectorAll(
+        ".rotation-button"
+      );
+
+
+    rotationButtons.forEach(
+      function (button) {
+
+        button.addEventListener(
+          "click",
+          function () {
+
+            rotationToApply =
+              Number(
+                button.dataset.rotation
+              );
+
+
+            showSuccess(
+              "Rotation selected: " +
+              rotationToApply +
+              "°. Now click Download Rotated PDF."
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+
+    /*
+     * ==========================================
+     * DOWNLOAD
+     * ==========================================
+     */
+
+    downloadButton.addEventListener(
+      "click",
+      async function () {
+
+
+        /*
+         * Check PDF.
+         */
+
+        if (!pdfData) {
+
+          showError(
+            "Please upload a PDF first."
+          );
+
+          return;
+
+        }
+
+
+        /*
+         * Check rotation.
+         */
+
+        if (
+          rotationToApply === 0
+        ) {
+
+          showError(
+            "Please choose 90°, 180° or 270° rotation."
+          );
+
+          return;
+
+        }
+
+
+        /*
+         * Check page input.
+         */
+
+        const pageText =
+          pageInput.value.trim();
+
+
+        if (!pageText) {
+
+          showError(
+            "Please enter the page numbers you want to rotate."
+          );
+
+          return;
+
+        }
+
+
+        /*
+         * Parse page numbers.
+         */
+
+        let pages;
+
+        try {
+
+          pages =
+            parsePages(
+              pageText,
+              totalPages
+            );
+
+        } catch (error) {
+
+          showError(
+            error.message
+          );
+
+          return;
+
+        }
+
+
+        if (
+          pages.length === 0
+        ) {
+
+          showError(
+            "No pages were selected."
+          );
+
+          return;
+
+        }
+
+
+        try {
+
+          downloadButton.disabled =
+            true;
+
+
+          showLoading(
+            "Creating rotated PDF..."
+          );
+
+
+          /*
+           * Create a fresh Uint8Array.
+
+           * This avoids changing the
+           * original ArrayBuffer.
+           */
+
+          const bytes =
+            new Uint8Array(
+              pdfData
+            );
+
+
+          /*
+           * Load the PDF.
+           */
+
+          const pdf =
+            await PDFLib.PDFDocument.load(
+              bytes
+            );
+
+
+          /*
+           * Get pages.
+           */
+
+          const pdfPages =
+            pdf.getPages();
+
+
+          /*
+           * Rotate selected pages.
+
+           * User page number = 1
+           * JavaScript index = 0
+           */
+
+          for (
+            let i = 0;
+            i < pages.length;
+            i++
+          ) {
+
+            const pageNumber =
+              pages[i];
+
+            const pageIndex =
+              pageNumber - 1;
+
+            const page =
+              pdfPages[pageIndex];
+
+
+            if (!page) {
+
+              throw new Error(
+                "Page " +
+                pageNumber +
+                " could not be found."
+              );
+
+            }
+
+
+            /*
+             * Get existing rotation.
+
+             * PDF-LIB stores rotation
+             * as an angle object.
+             */
+
+            const currentRotation =
+              page.getRotation().angle;
+
+
+            /*
+             * Calculate new rotation.
+             */
+
+            const newRotation =
+              (
+                currentRotation +
+                rotationToApply
+              ) % 360;
+
+
+            /*
+             * Apply rotation.
+             */
+
+            page.setRotation(
+              PDFLib.degrees(
+                newRotation
+              )
+            );
+
+          }
+
+
+          /*
+           * Save the PDF.
+           */
+
+          showLoading(
+            "Saving rotated PDF..."
+          );
+
+
+          const output =
+            await pdf.save();
+
+
+          /*
+           * Create download Blob.
+           */
+
+          const blob =
+            new Blob(
+              [output],
+              {
+                type:
+                  "application/pdf"
+              }
+            );
+
+
+          /*
+           * Create download URL.
+           */
+
+          const url =
+            URL.createObjectURL(
+              blob
+            );
+
+
+          /*
+           * Create download link.
+           */
+
+          const link =
+            document.createElement(
+              "a"
+            );
+
+
+          link.href =
+            url;
+
+          link.download =
+            "rotated-pages.pdf";
+
+
+          document.body.appendChild(
+            link
+          );
+
+
+          link.click();
+
+
+          link.remove();
+
+
+          /*
+           * Release memory.
+           */
+
+          setTimeout(
+            function () {
+
+              URL.revokeObjectURL(
+                url
+              );
+
+            },
+            1000
+          );
+
+
+          showSuccess(
+            "✓ Rotated PDF downloaded successfully!"
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "ROTATE ERROR:",
+            error
+          );
+
+
+          showError(
+            "The PDF could not be rotated. Please try another PDF."
+          );
+
+        }
+
+
+        downloadButton.disabled =
+          false;
+
+      }
+    );
+
+
+
+    /*
+     * ==========================================
+     * PAGE PARSER
+     * ==========================================
+     *
+     * Supports:
+     *
+     * 1
+     * 1,3,5
+     * 2-5
+     * 1,3-5,8
+     *
+     */
+
+    function parsePages(
+      text,
+      maxPages
+    ) {
+
+      const pages =
+        new Set();
+
+
+      const parts =
+        text.split(",");
+
+
+      for (
+        const rawPart of parts
+      ) {
+
+        const part =
+          rawPart.trim();
+
+
+        if (!part) {
+          continue;
+        }
+
+
+        /*
+         * RANGE
+         */
+
+        if (
+          part.includes("-")
+        ) {
+
+          const range =
+            part.split("-");
+
+
+          if (
+            range.length !== 2
+          ) {
+
+            throw new Error(
+              "Invalid page range: " +
+              part
+            );
+
+          }
+
+
+          const start =
+            Number(
+              range[0].trim()
+            );
+
+          const end =
+            Number(
+              range[1].trim()
+            );
+
+
+          if (
+            !Number.isInteger(start) ||
+            !Number.isInteger(end)
+          ) {
+
+            throw new Error(
+              "Invalid page range: " +
+              part
+            );
+
+          }
+
+
+          if (
+            start < 1 ||
+            end > maxPages ||
+            start > end
+          ) {
+
+            throw new Error(
+              "Invalid range " +
+              part +
+              ". Your PDF has " +
+              maxPages +
+              " pages."
+            );
+
+          }
+
+
+          for (
+            let page = start;
+            page <= end;
+            page++
+          ) {
+
+            pages.add(page);
+
+          }
+
+        }
+
+
+        /*
+         * SINGLE PAGE
+         */
+
+        else {
+
+          const page =
+            Number(part);
+
+
+          if (
+            !Number.isInteger(page)
+          ) {
+
+            throw new Error(
+              "Invalid page number: " +
+              part
+            );
+
+          }
+
+
+          if (
+            page < 1 ||
+            page > maxPages
+          ) {
+
+            throw new Error(
+              "Page " +
+              page +
+              " does not exist. Your PDF has " +
+              maxPages +
+              " pages."
+            );
+
+          }
+
+
+          pages.add(page);
+
+        }
+
+      }
+
+
+      return Array.from(
+        pages
+      ).sort(
+        function (a, b) {
+          return a - b;
+        }
+      );
+
+    }
+
+
+
+    /*
+     * ==========================================
+     * STATUS FUNCTIONS
+     * ==========================================
+     */
+
+    function showLoading(
+      message
+    ) {
+
+      status.textContent =
+        message;
+
+      status.className =
+        "loading";
+
+    }
+
+
+    function showSuccess(
+      message
+    ) {
+
+      status.textContent =
+        message;
+
+      status.className =
+        "success";
+
+    }
+
+
+    function showError(
+      message
+    ) {
+
+      status.textContent =
+        "✕ " + message;
+
+      status.className =
+        "error";
+
+    }
+
+  </script>
+
+</body>
+
+</html>

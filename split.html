@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Split PDF - PDF Extractor</title>
+
+
+  <!-- PDF-LIB -->
+
+  <script
+    src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js">
+  </script>
+
+
+  <!-- JSZIP -->
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js">
+  </script>
+
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+
+    body {
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background: #f8fafc;
+
+      color: #111827;
+
+    }
+
+
+    /* =========================
+       NAVBAR
+    ========================= */
+
+    .navbar {
+
+      height: 70px;
+
+      background: white;
+
+      border-bottom:
+        1px solid #e5e7eb;
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      padding: 0 7%;
+
+    }
+
+
+    .logo {
+
+      text-decoration: none;
+
+      color: #2563eb;
+
+      font-size: 22px;
+
+      font-weight: bold;
+
+    }
+
+
+    .nav-links {
+
+      display: flex;
+
+      gap: 25px;
+
+      list-style: none;
+
+    }
+
+
+    .nav-links a {
+
+      text-decoration: none;
+
+      color: #374151;
+
+    }
+
+
+    .nav-links a:hover {
+
+      color: #2563eb;
+
+    }
+
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    .container {
+
+      max-width: 1000px;
+
+      margin: auto;
+
+      padding: 50px 20px;
+
+    }
+
+
+    .title {
+
+      text-align: center;
+
+      margin-bottom: 35px;
+
+    }
+
+
+    .title h1 {
+
+      font-size: 40px;
+
+      margin-bottom: 10px;
+
+    }
+
+
+    .title p {
+
+      color: #6b7280;
+
+    }
+
+
+    /* =========================
+       UPLOAD
+    ========================= */
+
+    .upload-box {
+
+      background: white;
+
+      border:
+        2px dashed #93c5fd;
+
+      border-radius: 15px;
+
+      padding: 45px;
+
+      text-align: center;
+
+      margin-bottom: 25px;
+
+    }
+
+
+    .upload-icon {
+
+      font-size: 45px;
+
+      margin-bottom: 15px;
+
+    }
+
+
+    .upload-box h2 {
+
+      margin-bottom: 10px;
+
+    }
+
+
+    .upload-box p {
+
+      color: #6b7280;
+
+      margin-bottom: 20px;
+
+    }
+
+
+    #pdfInput {
+
+      display: none;
+
+    }
+
+
+    .upload-button {
+
+      display: inline-block;
+
+      background: #2563eb;
+
+      color: white;
+
+      padding:
+        13px 25px;
+
+      border-radius: 8px;
+
+      cursor: pointer;
+
+      font-weight: bold;
+
+    }
+
+
+    .upload-button:hover {
+
+      background: #1d4ed8;
+
+    }
+
+
+    /* =========================
+       FILE INFO
+    ========================= */
+
+    .file-info {
+
+      display: none;
+
+      background: #eff6ff;
+
+      border:
+        1px solid #bfdbfe;
+
+      padding: 15px;
+
+      border-radius: 10px;
+
+      margin-bottom: 25px;
+
+    }
+
+
+    /* =========================
+       OPTIONS
+    ========================= */
+
+    .options {
+
+      display: none;
+
+      background: white;
+
+      border:
+        1px solid #e5e7eb;
+
+      border-radius: 12px;
+
+      padding: 25px;
+
+      margin-bottom: 25px;
+
+    }
+
+
+    .options h2 {
+
+      font-size: 22px;
+
+      margin-bottom: 15px;
+
+    }
+
+
+    .mode-box {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(2, 1fr);
+
+      gap: 15px;
+
+      margin-bottom: 25px;
+
+    }
+
+
+    .mode {
+
+      border:
+        2px solid #e5e7eb;
+
+      border-radius: 10px;
+
+      padding: 18px;
+
+      cursor: pointer;
+
+      transition: 0.2s;
+
+    }
+
+
+    .mode:hover {
+
+      border-color:
+        #93c5fd;
+
+    }
+
+
+    .mode.active {
+
+      border-color:
+        #2563eb;
+
+      background:
+        #eff6ff;
+
+    }
+
+
+    .mode h3 {
+
+      margin-bottom: 7px;
+
+    }
+
+
+    .mode p {
+
+      color: #6b7280;
+
+      font-size: 14px;
+
+      line-height: 1.5;
+
+    }
+
+
+    .input-group {
+
+      margin-top: 15px;
+
+    }
+
+
+    .input-group label {
+
+      display: block;
+
+      font-weight: bold;
+
+      margin-bottom: 8px;
+
+    }
+
+
+    .page-input {
+
+      width: 100%;
+
+      padding: 13px;
+
+      border:
+        1px solid #d1d5db;
+
+      border-radius: 8px;
+
+      font-size: 16px;
+
+      outline: none;
+
+    }
+
+
+    .page-input:focus {
+
+      border-color:
+        #2563eb;
+
+      box-shadow:
+        0 0 0 3px #dbeafe;
+
+    }
+
+
+    .help {
+
+      margin-top: 8px;
+
+      color: #6b7280;
+
+      font-size: 14px;
+
+      line-height: 1.6;
+
+    }
+
+
+    /* =========================
+       BUTTON
+    ========================= */
+
+    .actions {
+
+      text-align: center;
+
+      margin-top: 25px;
+
+    }
+
+
+    .split-button {
+
+      background:
+        #16a34a;
+
+      color: white;
+
+      border: none;
+
+      padding:
+        15px 35px;
+
+      border-radius: 9px;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+    }
+
+
+    .split-button:hover {
+
+      background:
+        #15803d;
+
+    }
+
+
+    .split-button:disabled {
+
+      background:
+        #9ca3af;
+
+      cursor: not-allowed;
+
+    }
+
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    #status {
+
+      text-align: center;
+
+      margin-top: 20px;
+
+      font-weight: bold;
+
+      line-height: 1.6;
+
+    }
+
+
+    .success {
+
+      color:
+        #16a34a;
+
+    }
+
+
+    .error {
+
+      color:
+        #dc2626;
+
+    }
+
+
+    .loading {
+
+      color:
+        #2563eb;
+
+    }
+
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 600px) {
+
+      .navbar {
+
+        padding:
+          0 20px;
+
+      }
+
+
+      .title h1 {
+
+        font-size:
+          32px;
+
+      }
+
+
+      .upload-box {
+
+        padding:
+          30px 15px;
+
+      }
+
+
+      .mode-box {
+
+        grid-template-columns:
+          1fr;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <!-- =========================
+       NAVBAR
+  ========================= -->
+
+  <header class="navbar">
+
+    <a
+      href="index.html"
+      class="logo"
+    >
+      PDF Extractor
+    </a>
+
+
+    <nav>
+
+      <ul class="nav-links">
+
+        <li>
+          <a href="index.html">
+            Home
+          </a>
+        </li>
+
+
+        <li>
+          <a href="index.html#tools">
+            Tools
+          </a>
+        </li>
+
+      </ul>
+
+    </nav>
+
+  </header>
+
+
+
+  <!-- =========================
+       MAIN
+  ========================= -->
+
+  <main class="container">
+
+
+    <section class="title">
+
+      <h1>
+        Split PDF
+      </h1>
+
+
+      <p>
+        Split your PDF into separate
+        PDF files.
+      </p>
+
+    </section>
+
+
+
+    <!-- =========================
+         UPLOAD
+    ========================= -->
+
+    <section class="upload-box">
+
+      <div class="upload-icon">
+        ✂️
+      </div>
+
+
+      <h2>
+        Upload your PDF
+      </h2>
+
+
+      <p>
+        Select the PDF you want to split.
+      </p>
+
+
+      <input
+        type="file"
+        id="pdfInput"
+        accept=".pdf,application/pdf"
+      >
+
+
+      <label
+        for="pdfInput"
+        class="upload-button"
+      >
+        Choose PDF
+      </label>
+
+    </section>
+
+
+
+    <!-- =========================
+         FILE INFO
+    ========================= -->
+
+    <div
+      class="file-info"
+      id="fileInfo"
+    >
+
+      <strong>
+        File:
+      </strong>
+
+      <span id="fileName">
+      </span>
+
+
+      &nbsp;&nbsp; | &nbsp;&nbsp;
+
+
+      <strong>
+        Total Pages:
+      </strong>
+
+      <span id="totalPages">
+      </span>
+
+    </div>
+
+
+
+    <!-- =========================
+         OPTIONS
+    ========================= -->
+
+    <section
+      class="options"
+      id="options"
+    >
+
+      <h2>
+        Split Options
+      </h2>
+
+
+
+      <!-- MODES -->
+
+      <div class="mode-box">
+
+
+        <!-- EVERY PAGE -->
+
+        <div
+          class="mode active"
+          id="everyPageMode"
+        >
+
+          <h3>
+            📄 Every Page
+          </h3>
+
+          <p>
+            Create a separate PDF
+            for every page.
+          </p>
+
+        </div>
+
+
+
+        <!-- CUSTOM RANGE -->
+
+        <div
+          class="mode"
+          id="customMode"
+        >
+
+          <h3>
+            ✂️ Custom Pages
+          </h3>
+
+          <p>
+            Choose specific pages
+            or page ranges.
+          </p>
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- CUSTOM INPUT -->
+
+      <div
+        class="input-group"
+        id="customInputGroup"
+        style="display:none;"
+      >
+
+        <label for="pageInput">
+          Pages to split
+        </label>
+
+
+        <input
+          type="text"
+          id="pageInput"
+          class="page-input"
+          placeholder="Example: 1, 3-5, 8"
+        >
+
+
+        <p class="help">
+
+          Examples:
+
+          <strong>1,3,5</strong>
+          → pages 1, 3 and 5
+
+          <br>
+
+          <strong>2-5</strong>
+          → pages 2 through 5
+
+          <br>
+
+          <strong>1,3-5,8</strong>
+          → pages 1, 3, 4, 5 and 8
+
+        </p>
+
+      </div>
+
+
+
+      <!-- SPLIT BUTTON -->
+
+      <div class="actions">
+
+        <button
+          class="split-button"
+          id="splitButton"
+        >
+          Split PDF
+        </button>
+
+      </div>
+
+
+      <div id="status"></div>
+
+
+    </section>
+
+
+  </main>
+
+
+
+  <script>
+
+
+    /*
+      =========================
+      CHECK LIBRARIES
+      =========================
+    */
+
+    if (
+      typeof PDFLib ===
+      "undefined"
+    ) {
+
+      throw new Error(
+        "PDF-LIB did not load."
+      );
+
+    }
+
+
+    if (
+      typeof JSZip ===
+      "undefined"
+    ) {
+
+      throw new Error(
+        "JSZip did not load."
+      );
+
+    }
+
+
+
+    /*
+      =========================
+      ELEMENTS
+      =========================
+    */
+
+    const pdfInput =
+      document.getElementById(
+        "pdfInput"
+      );
+
+
+    const fileInfo =
+      document.getElementById(
+        "fileInfo"
+      );
+
+
+    const fileName =
+      document.getElementById(
+        "fileName"
+      );
+
+
+    const totalPagesElement =
+      document.getElementById(
+        "totalPages"
+      );
+
+
+    const options =
+      document.getElementById(
+        "options"
+      );
+
+
+    const everyPageMode =
+      document.getElementById(
+        "everyPageMode"
+      );
+
+
+    const customMode =
+      document.getElementById(
+        "customMode"
+      );
+
+
+    const customInputGroup =
+      document.getElementById(
+        "customInputGroup"
+      );
+
+
+    const pageInput =
+      document.getElementById(
+        "pageInput"
+      );
+
+
+    const splitButton =
+      document.getElementById(
+        "splitButton"
+      );
+
+
+    const status =
+      document.getElementById(
+        "status"
+      );
+
+
+
+    /*
+      =========================
+      VARIABLES
+      =========================
+    */
+
+    let originalPdfBytes =
+      null;
+
+
+    let totalPages =
+      0;
+
+
+    let splitMode =
+      "every";
+
+
+
+    /*
+      =========================
+      UPLOAD PDF
+      =========================
+    */
+
+    pdfInput.addEventListener(
+      "change",
+      async function () {
+
+
+        const file =
+          this.files[0];
+
+
+        if (!file) {
+
+          return;
+
+        }
+
+
+        /*
+          Check PDF
+        */
+
+        if (
+          file.type !==
+          "application/pdf" &&
+          !file.name
+            .toLowerCase()
+            .endsWith(".pdf")
+        ) {
+
+          showError(
+            "Please select a PDF file."
+          );
+
+          return;
+
+        }
+
+
+        try {
+
+
+          showLoading(
+            "Loading PDF..."
+          );
+
+
+          /*
+            Read PDF
+          */
+
+          originalPdfBytes =
+            await file.arrayBuffer();
+
+
+          /*
+            Load PDF
+          */
+
+          const pdf =
+            await PDFLib
+              .PDFDocument
+              .load(
+                originalPdfBytes
+              );
+
+
+          /*
+            Get pages
+          */
+
+          totalPages =
+            pdf.getPageCount();
+
+
+          /*
+            Show information
+          */
+
+          fileName.textContent =
+            file.name;
+
+
+          totalPagesElement.textContent =
+            totalPages;
+
+
+          fileInfo.style.display =
+            "block";
+
+
+          options.style.display =
+            "block";
+
+
+          showLoading(
+            "PDF loaded successfully."
+          );
+
+
+        } catch (error) {
+
+
+          console.error(
+            "PDF loading error:",
+            error
+          );
+
+
+          showError(
+            "This PDF could not be opened. Please try another PDF."
+          );
+
+        }
+
+      }
+    );
+
+
+
+    /*
+      =========================
+      EVERY PAGE MODE
+      =========================
+    */
+
+    everyPageMode.addEventListener(
+      "click",
+      function () {
+
+
+        splitMode =
+          "every";
+
+
+        everyPageMode.classList.add(
+          "active"
+        );
+
+
+        customMode.classList.remove(
+          "active"
+        );
+
+
+        customInputGroup.style.display =
+          "none";
+
+
+        clearStatus();
+
+      }
+    );
+
+
+
+    /*
+      =========================
+      CUSTOM MODE
+      =========================
+    */
+
+    customMode.addEventListener(
+      "click",
+      function () {
+
+
+        splitMode =
+          "custom";
+
+
+        customMode.classList.add(
+          "active"
+        );
+
+
+        everyPageMode.classList.remove(
+          "active"
+        );
+
+
+        customInputGroup.style.display =
+          "block";
+
+
+        clearStatus();
+
+      }
+    );
+
+
+
+    /*
+      =========================
+      SPLIT BUTTON
+      =========================
+    */
+
+    splitButton.addEventListener(
+      "click",
+      async function () {
+
+
+        if (!originalPdfBytes) {
+
+          showError(
+            "Please upload a PDF first."
+          );
+
+          return;
+
+        }
+
+
+        try {
+
+
+          splitButton.disabled =
+            true;
+
+
+          /*
+            EVERY PAGE
+          */
+
+          if (
+            splitMode ===
+            "every"
+          ) {
+
+            await splitEveryPage();
+
+
+          }
+
+
+          /*
+            CUSTOM
+          */
+
+          else {
+
+            await splitCustomPages();
+
+          }
+
+
+        } catch (error) {
+
+
+          console.error(
+            "Split error:",
+            error
+          );
+
+
+          showError(
+            "Something went wrong while splitting the PDF. Open F12 → Console for the exact error."
+          );
+
+
+        }
+
+
+        splitButton.disabled =
+          false;
+
+      }
+    );
+
+
+
+    /*
+      =========================
+      SPLIT EVERY PAGE
+      =========================
+    */
+
+    async function splitEveryPage() {
+
+
+      showLoading(
+        "Creating PDF files..."
+      );
+
+
+      /*
+        Load original
+      */
+
+      const sourcePdf =
+        await PDFLib
+          .PDFDocument
+          .load(
+            originalPdfBytes
+          );
+
+
+      /*
+        Create ZIP
+      */
+
+      const zip =
+        new JSZip();
+
+
+      /*
+        Create one PDF
+        for every page
+      */
+
+      for (
+        let i = 0;
+        i < totalPages;
+        i++
+      ) {
+
+
+        /*
+          Create new PDF
+        */
+
+        const newPdf =
+          await PDFLib
+            .PDFDocument
+            .create();
+
+
+        /*
+          Copy one page
+
+          IMPORTANT:
+          i is already zero-based.
+        */
+
+        const copiedPages =
+          await newPdf.copyPages(
+            sourcePdf,
+            [i]
+          );
+
+
+        /*
+          Add page
+        */
+
+        newPdf.addPage(
+          copiedPages[0]
+        );
+
+
+        /*
+          Save
+        */
+
+        const pdfBytes =
+          await newPdf.save();
+
+
+        /*
+          Add to ZIP
+        */
+
+        zip.file(
+          `page-${i + 1}.pdf`,
+          pdfBytes
+        );
+
+
+        /*
+          Update status
+        */
+
+        showLoading(
+          `Creating page ${i + 1} of ${totalPages}...`
+        );
+
+      }
+
+
+      /*
+        Generate ZIP
+      */
+
+      const zipBlob =
+        await zip.generateAsync({
+          type: "blob"
+        });
+
+
+      /*
+        Download ZIP
+      */
+
+      downloadBlob(
+        zipBlob,
+        "split-pages.zip"
+      );
+
+
+      showSuccess(
+        "✓ All pages have been split and downloaded as a ZIP file."
+      );
+
+    }
+
+
+
+    /*
+      =========================
+      SPLIT CUSTOM PAGES
+      =========================
+    */
+
+    async function splitCustomPages() {
+
+
+      const text =
+        pageInput.value.trim();
+
+
+      if (!text) {
+
+        showError(
+          "Please enter the pages you want to split."
+        );
+
+        return;
+
+      }
+
+
+      /*
+        Parse pages
+      */
+
+      let pages;
+
+
+      try {
+
+        pages =
+          parsePages(
+            text,
+            totalPages
+          );
+
+      } catch (error) {
+
+        showError(
+          error.message
+        );
+
+        return;
+
+      }
+
+
+      if (
+        pages.length === 0
+      ) {
+
+        showError(
+          "No valid pages were selected."
+        );
+
+        return;
+
+      }
+
+
+      showLoading(
+        "Creating selected PDF files..."
+      );
+
+
+      /*
+        Load source
+      */
+
+      const sourcePdf =
+        await PDFLib
+          .PDFDocument
+          .load(
+            originalPdfBytes
+          );
+
+
+      /*
+        Create ZIP
+      */
+
+      const zip =
+        new JSZip();
+
+
+      /*
+        Create one PDF for
+        each selected page
+      */
+
+      for (
+        let i = 0;
+        i < pages.length;
+        i++
+      ) {
+
+
+        const pageNumber =
+          pages[i];
+
+
+        /*
+          Create new PDF
+        */
+
+        const newPdf =
+          await PDFLib
+            .PDFDocument
+            .create();
+
+
+        /*
+          Convert page number
+          to zero-based index
+        */
+
+        const pageIndex =
+          pageNumber - 1;
+
+
+        /*
+          Copy page
+        */
+
+        const copiedPages =
+          await newPdf.copyPages(
+            sourcePdf,
+            [pageIndex]
+          );
+
+
+        /*
+          Add page
+        */
+
+        newPdf.addPage(
+          copiedPages[0]
+        );
+
+
+        /*
+          Save
+        */
+
+        const pdfBytes =
+          await newPdf.save();
+
+
+        /*
+          Add PDF to ZIP
+        */
+
+        zip.file(
+          `page-${pageNumber}.pdf`,
+          pdfBytes
+        );
+
+
+        showLoading(
+          `Creating page ${i + 1} of ${pages.length}...`
+        );
+
+      }
+
+
+      /*
+        Generate ZIP
+      */
+
+      const zipBlob =
+        await zip.generateAsync({
+          type: "blob"
+        });
+
+
+      /*
+        Download
+      */
+
+      downloadBlob(
+        zipBlob,
+        "selected-pages.zip"
+      );
+
+
+      showSuccess(
+        "✓ Selected pages have been split and downloaded as a ZIP file."
+      );
+
+    }
+
+
+
+    /*
+      =========================
+      PARSE PAGE NUMBERS
+      =========================
+
+      Examples:
+
+      1
+
+      1,3,5
+
+      2-5
+
+      1,3-5,8
+    */
+
+    function parsePages(
+      text,
+      maxPages
+    ) {
+
+
+      const result =
+        new Set();
+
+
+      const parts =
+        text.split(",");
+
+
+      for (
+        let part of parts
+      ) {
+
+
+        part =
+          part.trim();
+
+
+        if (!part) {
+
+          continue;
+
+        }
+
+
+        /*
+          RANGE
+        */
+
+        if (
+          part.includes("-")
+        ) {
+
+
+          const range =
+            part.split("-");
+
+
+          if (
+            range.length !== 2
+          ) {
+
+            throw new Error(
+              "Invalid range: " +
+              part
+            );
+
+          }
+
+
+          const start =
+            Number(
+              range[0].trim()
+            );
+
+
+          const end =
+            Number(
+              range[1].trim()
+            );
+
+
+          if (
+            !Number.isInteger(start) ||
+            !Number.isInteger(end)
+          ) {
+
+            throw new Error(
+              "Invalid page range: " +
+              part
+            );
+
+          }
+
+
+          if (
+            start < 1 ||
+            end > maxPages ||
+            start > end
+          ) {
+
+            throw new Error(
+              `Invalid range ${part}. This PDF has ${maxPages} pages.`
+            );
+
+          }
+
+
+          for (
+            let i = start;
+            i <= end;
+            i++
+          ) {
+
+            result.add(i);
+
+          }
+
+
+        }
+
+
+        /*
+          SINGLE PAGE
+        */
+
+        else {
+
+
+          const page =
+            Number(
+              part
+            );
+
+
+          if (
+            !Number.isInteger(page)
+          ) {
+
+            throw new Error(
+              "Invalid page number: " +
+              part
+            );
+
+          }
+
+
+          if (
+            page < 1 ||
+            page > maxPages
+          ) {
+
+            throw new Error(
+              `Page ${page} does not exist. This PDF has ${maxPages} pages.`
+            );
+
+          }
+
+
+          result.add(page);
+
+        }
+
+      }
+
+
+      /*
+        Sort pages
+      */
+
+      return Array.from(
+        result
+      ).sort(
+        (a, b) => a - b
+      );
+
+    }
+
+
+
+    /*
+      =========================
+      DOWNLOAD BLOB
+      =========================
+    */
+
+    function downloadBlob(
+      blob,
+      filename
+    ) {
+
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+
+      const link =
+        document.createElement(
+          "a"
+        );
+
+
+      link.href =
+        url;
+
+
+      link.download =
+        filename;
+
+
+      document.body.appendChild(
+        link
+      );
+
+
+      link.click();
+
+
+      link.remove();
+
+
+      setTimeout(
+        function () {
+
+          URL.revokeObjectURL(
+            url
+          );
+
+        },
+        1000
+      );
+
+    }
+
+
+
+    /*
+      =========================
+      STATUS
+      =========================
+    */
+
+    function showLoading(
+      message
+    ) {
+
+      status.textContent =
+        message;
+
+      status.className =
+        "loading";
+
+    }
+
+
+    function showSuccess(
+      message
+    ) {
+
+      status.textContent =
+        message;
+
+      status.className =
+        "success";
+
+    }
+
+
+    function showError(
+      message
+    ) {
+
+      status.textContent =
+        "✕ " + message;
+
+      status.className =
+        "error";
+
+    }
+
+
+    function clearStatus() {
+
+      status.textContent =
+        "";
+
+      status.className =
+        "";
+
+    }
+
+  </script>
+
+
+</body>
+
+</html>
++
